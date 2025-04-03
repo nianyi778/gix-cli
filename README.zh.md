@@ -19,7 +19,7 @@
 ## 📦 安装方式
 
 ```bash
-npm install -g gix
+npm install -g gix-cli
 ```
 
 安装后即可全局使用：

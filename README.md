@@ -19,7 +19,7 @@
 ## 📦 Installation
 
 ```bash
-npm install -g gix
+npm install -g gix-cli
 ```
 
 Then use it globally:
