@@ -5,10 +5,10 @@ import inquirer from 'inquirer';
 import { execSync } from 'child_process';
 
 const mergeCommand = new Command('merge')
-  .description('合并多个 git commit')
-  .option('-f, --from <hash>', '起始 commit hash（必填）')
-  .option('-t, --to <hash>', '结束 commit hash（默认 HEAD）')
-  .option('-m, --msg <message>', '新的 commit message')
+  .description('Merge multiple git commits')
+  .option('-f, --from <hash>', 'Start commit hash (required)')
+  .option('-t, --to <hash>', 'End commit hash (default is HEAD)')
+  .option('-m, --msg <message>', 'New commit message')
   .action(async (options) => {
     const questions = [];
 
@@ -16,8 +16,8 @@ const mergeCommand = new Command('merge')
       questions.push({
         type: 'input',
         name: 'from',
-        message: '请输入起始 commit（hash）:',
-        validate: (input: string) => !!input || '起始 commit 不能为空',
+        message: 'Enter the start commit hash:',
+        validate: (input: string) => !!input || 'Start commit hash is required.',
       });
     }
 
@@ -25,7 +25,7 @@ const mergeCommand = new Command('merge')
       questions.push({
         type: 'input',
         name: 'to',
-        message: '请输入结束 commit（默认 HEAD 可留空）:',
+        message: 'Enter the end commit hash (leave blank for HEAD):',
       });
     }
 
@@ -33,8 +33,8 @@ const mergeCommand = new Command('merge')
       questions.push({
         type: 'input',
         name: 'msg',
-        message: '请输入新的 commit message:',
-        validate: (input: string) => !!input || 'commit message 不能为空',
+        message: 'Enter the new commit message:',
+        validate: (input: string) => !!input || 'Commit message cannot be empty.',
       });
     }
 
@@ -43,24 +43,37 @@ const mergeCommand = new Command('merge')
     const to = options.to || answers.to || 'HEAD';
     const msg = options.msg || answers.msg;
 
+    const rootCommits = execSync(`git rev-list --max-parents=0 HEAD`).toString().trim().split('\n');
+    if (rootCommits.includes(from)) {
+      console.error('❌ Cannot merge from the first (root) commit — it has no parent.\n👉 Consider using `git rebase --root` instead.');
+      return;
+    }
+
+    // 检查工作区是否干净
+    const status = execSync('git status --porcelain').toString().trim();
+    if (status) {
+      console.error('❌ Your working directory is not clean. Please commit, stash, or reset changes before merging.');
+      return;
+    }
+
     const resetCmd = `git reset --soft ${from}^`;
     const commitCmd = `git commit --edit -m "${msg}" --no-verify`;
 
-    console.log(`\n🔧 准备执行：\n${resetCmd} && ${commitCmd}\n`);
+    console.log(`\n🔧 Executing:\n${resetCmd} && ${commitCmd}\n`);
 
     try {
       execSync(resetCmd, { stdio: 'inherit' });
-      console.log('✅ reset 成功');
+      console.log('✅ Reset successful');
     } catch (err) {
-      console.error('❌ reset 执行失败：', err);
+      console.error('❌ Reset failed:', err);
       return;
     }
 
     try {
       execSync(commitCmd, { stdio: 'inherit' });
-      console.log('✅ commit 成功');
+      console.log('✅ Commit successful');
     } catch (err) {
-      console.error('❌ commit 执行失败：', err);
+      console.error('❌ Commit failed:', err);
       return;
     }
 
@@ -69,24 +82,24 @@ const mergeCommand = new Command('merge')
         {
           type: 'list',
           name: 'pushConfirm',
-          message: '是否执行自动强推？',
+          message: 'Do you want to force push automatically?',
           choices: [
-            { name: '✅ 是（默认）', value: 'yes' },
-            { name: '❌ 否，我手动推送', value: 'no' },
+            { name: '✅ Yes (default)', value: 'yes' },
+            { name: '❌ No, I will push manually', value: 'no' },
           ],
           default: 'yes'
         }
       ]);
 
       if (pushConfirm === 'yes') {
-        console.log('\n🚀 正在执行 git push --force-with-lease\n');
+        console.log('\n🚀 Executing git push --force-with-lease\n');
         execSync('git push --force-with-lease', { stdio: 'inherit' });
-        console.log('✅ 强推成功');
+        console.log('✅ Force push successful');
       } else {
-        console.log('\n⚠️ 请手动执行 git push\n');
+        console.log('\n⚠️ Please push manually using git push\n');
       }
     } catch (err) {
-      console.error('❌ push 执行失败：', err);
+      console.error('❌ Push failed:', err);
     }
   });
 

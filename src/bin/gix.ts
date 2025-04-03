@@ -1,13 +1,18 @@
 import { Command } from 'commander';
 import mergeCommand from '../commands/merge';
+import squashCommand from '../commands/squash';
+import doctorCommand from '../commands/doctor';
+import pkg from '../../package.json';
 
 const program = new Command();
 
 program
   .name('gix')
   .description('Gix: A Git extension CLI tool')
-  .version('1.0.0');
+  .version(pkg.version);
 
 program.addCommand(mergeCommand);
+program.addCommand(squashCommand);
+program.addCommand(doctorCommand);
 
 program.parse();
