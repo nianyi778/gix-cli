@@ -1,12 +1,24 @@
 {
   "name": "gix-cli",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A Git extension CLI tool",
   "bin": {
     "gix": "dist/gix.js"
   },
   "type": "module",
   "license": "MIT",
+  "author": {
+    "name": "Li Kai",
+    "email": "nianyi778@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nianyi778/gix-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nianyi778/gix-cli/issues"
+  },
+  "homepage": "https://github.com/nianyi778/gix-cli#readme",
   "scripts": {
     "dev": "node --loader ts-node/esm src/bin/gix.ts",
     "build": "tsup",
