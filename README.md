@@ -1,6 +1,6 @@
 # 🧰 gix
 
-[🇨🇳 中文文档](./README.zh.md) | [🇺🇸 English](./README.en.md)
+[🇨🇳 中文文档](./README.zh.md) | [🇺🇸 English](./README.md)
 
 **gix** is a Git extension CLI tool designed to simplify your Git workflows — especially for merging commits and force pushing, with safety and clarity.
 
@@ -11,6 +11,7 @@
 - 🔧 Interactively merge multiple Git commits
 - 💬 Custom commit message input
 - 🚦 Confirm force push automatically
+- ♻️ Reset local commits to remote (soft)
 - 🧱 Fully typed, powered by TypeScript
 - 🔌 Modular command system — more to come
 
@@ -70,8 +71,18 @@ gix doctor
 - Working directory clean?
 - Remote & branch info
 
+### Discard all local commits (soft reset to remote)
+
+```bash
+gix reset
+```
+
+- Soft reset to origin/branch
+- Keeps all local file changes
+- Removes unpushed commits only
+
 ---
 
 ## 📄 License
 
-MIT © 2025 [Nian Yi](./LICENSE)
+MIT © 2025 [Li Kai](./LICENSE)

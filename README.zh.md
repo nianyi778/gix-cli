@@ -1,6 +1,6 @@
 # 🧰 gix
 
-[🇨🇳 中文文档](./README.zh.md) | [🇺🇸 English](./README.en.md)
+[🇨🇳 中文文档](./README.zh.md) | [🇺🇸 English](./README.md)
 
 **gix** 是一个 Git 扩展命令行工具，专为合并提交、强推等 Git 流程优化而设计，提供交互式体验和类型安全支持。
 
@@ -11,6 +11,7 @@
 - 🔧 交互式合并多个 Git 提交
 - 💬 自定义提交信息
 - 🚦 自动确认是否强推（默认开启）
+- ♻️ 快速取消所有本地未推送提交（软重置）
 - 🧱 使用 TypeScript 编写，类型安全
 - 🔌 命令模块化设计，易于扩展
 
@@ -71,8 +72,18 @@ gix doctor
 - 是否配置远程仓库
 - 当前所在分支
 
+### 取消所有本地提交（软重置至远程）
+
+```bash
+gix reset
+```
+
+- 重置当前分支到远程 origin/branch
+- 保留所有文件变更
+- 仅移除未推送的 commit
+
 ---
 
 ## 📄 License
 
-MIT © 2025 [Nian Yi](./LICENSE)
+MIT © 2025 [Li Kai](./LICENSE)
