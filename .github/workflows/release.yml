@@ -48,7 +48,7 @@ jobs:
       - name: Create and push Git tag
         run: |
           git tag ${{ steps.pkg.outputs.version }}
-          git remote set-url origin https://${{ secrets.PERSONAL_TOKEN }}@github.com/nianyi778/gix-cli.git
+          git remote set-url origin https://nianyi778:${{ secrets.PERSONAL_TOKEN }}@github.com/nianyi778/gix-cli.git
           git push origin ${{ steps.pkg.outputs.version }}
 
       - name: Build project
