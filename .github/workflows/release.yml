@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Get version from package.json
         id: pkg
         run: |
@@ -30,12 +33,23 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create tag
+      - name: Check if tag already exists
+        run: |
+          if git rev-parse ${{ steps.pkg.outputs.version }} >/dev/null 2>&1; then
+            echo "Tag already exists, skipping."
+            exit 0
+          fi
+
+      - name: Create and push Git tag
         run: |
           git tag ${{ steps.pkg.outputs.version }}
+          git remote set-url origin https://${{ secrets.PERSONAL_TOKEN }}@github.com/nianyi778/gix-cli.git
           git push origin ${{ steps.pkg.outputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+
+      - name: Build project
+        run: |
+          npm run build
+          zip -r release.zip ./dist
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -43,5 +57,7 @@ jobs:
           tag_name: ${{ steps.pkg.outputs.version }}
           name: Release ${{ steps.pkg.outputs.version }}
           generate_release_notes: true
+          files: |
+            release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
