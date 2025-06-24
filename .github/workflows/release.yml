@@ -59,6 +59,13 @@ jobs:
           npm run build
           zip -r release.zip ./dist
 
+      - name: Publish to npm
+        run: |
+          npm config set //registry.npmjs.org/:_authToken=${NPM_TOKEN}
+          npm publish --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
