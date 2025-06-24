@@ -1,6 +1,6 @@
 {
   "name": "gix-cli",
-  "version": "1.2.1",
+  "version": "1.2.2-beta.0",
   "description": "A Git extension CLI tool",
   "bin": {
     "gix": "dist/gix.js"

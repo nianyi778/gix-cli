@@ -92,9 +92,28 @@ const mergeCommand = new Command('merge')
       ]);
 
       if (pushConfirm === 'yes') {
-        console.log('\n🚀 Executing git push --force-with-lease\n');
-        execSync('git push --force-with-lease', { stdio: 'inherit' });
-        console.log('✅ Force push successful');
+        try {
+          const currentBranch = execSync('git symbolic-ref --short HEAD').toString().trim();
+          let hasUpstream = false;
+          try {
+            execSync(`git rev-parse --abbrev-ref ${currentBranch}@{u}`, { stdio: 'ignore' });
+            hasUpstream = true;
+          } catch {
+            hasUpstream = false;
+          }
+
+          if (!hasUpstream) {
+            console.log(`\n🚀 No upstream detected. Executing: git push --set-upstream origin ${currentBranch}\n`);
+            execSync(`git push --set-upstream origin ${currentBranch}`, { stdio: 'inherit' });
+            console.log('✅ Push & upstream set successfully');
+          } else {
+            console.log('\n🚀 Executing git push --force-with-lease\n');
+            execSync('git push --force-with-lease', { stdio: 'inherit' });
+            console.log('✅ Force push successful');
+          }
+        } catch (pushErr) {
+          console.error('❌ Push failed:', pushErr);
+        }
       } else {
         console.log('\n⚠️ Please push manually using git push\n');
       }
