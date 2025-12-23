@@ -29,31 +29,32 @@
 - **Force Push**: 必须使用 `--force-with-lease` 保证安全，并总是先请求用户确认
 
 ## 开发工作流 (必读)
-为确保 CI/CD 一次通过，请严格遵守以下流程：
+为确保功能设计合理且 CI/CD 一次通过，请严格遵守以下 **"设计-批准-实现"** 流程：
 
-1. **本地开发**:
+1. **设计阶段 (Design Phase)**:
+   - 在 `_docs/space/` 下创建设计文档 (命名格式: `YYYYMMDD_feature_name.md`)。
+   - 文档需包含：背景、核心逻辑、参数设计 (`Args` 结构)、执行流程、冲突处理策略、测试计划。
+   - **必须等待用户确认批准**后，方可进入编码阶段。
+
+2. **编码实现 (Implementation Phase)**:
+   - 按照设计文档编写 Rust 代码。
+   - 遵循“命令开发模式”和“核心约定”。
+
+3. **代码检查 (Verification Phase)**:
+   - 在提交前必须在 `rust` 目录下执行：
    ```bash
-   cd rust
-   cargo run -- <command>  # 例如: cargo run -- doctor
+   cargo fmt                       # 格式化
+   cargo clippy -- -D warnings     # 静态检查 (零警告)
+   cargo check                     # 编译检查
+   cargo build --release           # 构建检查
    ```
 
-2. **代码检查 (提交前必做)**:
-   ```bash
-   cd rust
-   cargo fmt              # 自动格式化代码
-   cargo clippy -- -D warnings  # 检查潜在问题 (必须无警告)
-   cargo check            # 确保能编译通过
-   ```
-
-3. **构建测试**:
-   ```bash
-   cargo build --release  # 确保 release 构建成功
-   ```
-
-4. **提交代码**:
+4. **提交交付 (Delivery Phase)**:
+   - 更新设计文档状态为“已完成”。
+   - 提交代码：
    ```bash
    git add .
-   git commit -m "feat: description"
+   git commit -m "feat: add <feature>"
    git push
    ```
 
@@ -65,12 +66,13 @@
 - **Upstream Check**: `git rev-parse --abbrev-ref <branch>@{u}` (忽略错误即为无 upstream)
 
 ## 添加新命令步骤
-1. 在 [rust/src/commands/](../../rust/src/commands/) 创建文件 (例如 `mycommand.rs`)
-2. 定义 `Args` 结构体并添加 `#[derive(Args)]`
-3. 实现 `execute(args: Args) -> Result<()>`
-4. 在 [rust/src/commands/mod.rs](../../rust/src/commands/mod.rs) 导出: `pub mod mycommand;`
-5. 在 [rust/src/main.rs](../../rust/src/main.rs) 的 `Commands` 枚举中添加变体
-6. 在 `main()` 的 `match` 语句中添加分发逻辑
+1. **编写设计文档**并获得批准 (参考开发工作流)。
+2. 在 [rust/src/commands/](../../rust/src/commands/) 创建文件 (例如 `mycommand.rs`)
+3. 定义 `Args` 结构体并添加 `#[derive(Args)]`
+4. 实现 `execute(args: Args) -> Result<()>`
+5. 在 [rust/src/commands/mod.rs](../../rust/src/commands/mod.rs) 导出: `pub mod mycommand;`
+6. 在 [rust/src/main.rs](../../rust/src/main.rs) 的 `Commands` 枚举中添加变体
+7. 在 `main()` 的 `match` 语句中添加分发逻辑
 
 ## 外部依赖
 - **clap**: CLI 框架 (`#[derive(Parser)]`, `#[arg(...)]`)
