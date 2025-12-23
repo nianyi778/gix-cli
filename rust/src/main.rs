@@ -1,7 +1,7 @@
 mod commands;
 
 use clap::{Parser, Subcommand};
-use commands::{doctor, merge, reset, squash};
+use commands::{doctor, merge, rebase, reset, squash};
 
 #[derive(Parser)]
 #[command(name = "gix")]
@@ -15,6 +15,8 @@ struct Cli {
 enum Commands {
     /// Merge multiple git commits
     Merge(merge::MergeArgs),
+    /// Rebase current branch onto upstream
+    Rebase(rebase::RebaseArgs),
     /// Squash recent commits into one
     Squash(squash::SquashArgs),
     /// Check git working directory and environment
@@ -28,6 +30,7 @@ fn main() {
 
     let result = match cli.command {
         Commands::Merge(args) => merge::execute(args),
+        Commands::Rebase(args) => rebase::execute(args),
         Commands::Squash(args) => squash::execute(args),
         Commands::Doctor => doctor::execute(),
         Commands::Reset => reset::execute(),

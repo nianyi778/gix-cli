@@ -1,5 +1,6 @@
 pub mod doctor;
 pub mod merge;
+pub mod rebase;
 pub mod reset;
 pub mod squash;
 
