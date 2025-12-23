@@ -1,0 +1,44 @@
+{
+  "name": "gix-cli-rust",
+  "version": "1.2.2",
+  "description": "A Git extension CLI tool (Rust implementation)",
+  "bin": {
+    "gix": "./bin/gix"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Li Kai",
+    "email": "nianyi778@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nianyi778/gix-cli.git",
+    "directory": "rust"
+  },
+  "scripts": {
+    "postinstall": "node scripts/install.js"
+  },
+  "files": [
+    "bin/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "git",
+    "cli",
+    "rust",
+    "commit",
+    "merge",
+    "squash"
+  ],
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+}

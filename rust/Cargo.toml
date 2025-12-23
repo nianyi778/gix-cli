@@ -1,0 +1,27 @@
+[package]
+name = "gix-cli"
+version = "1.2.2"
+edition = "2021"
+authors = ["Li Kai <nianyi778@gmail.com>"]
+license = "MIT"
+description = "A Git extension CLI tool"
+repository = "https://github.com/nianyi778/gix-cli.git"
+homepage = "https://github.com/nianyi778/gix-cli#readme"
+readme = "README.md"
+keywords = ["git", "cli", "commit", "merge", "squash"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "gix"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+inquire = "0.7"
+colored = "2.1"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true

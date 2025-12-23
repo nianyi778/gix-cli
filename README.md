@@ -4,6 +4,17 @@
 
 **gix** is a Git extension CLI tool designed to simplify your Git workflows — especially for merging commits and force pushing, with safety and clarity.
 
+## 📦 Versions
+
+This repository contains two implementations:
+
+- **[Rust Version](./rust/)** — Modern, performant native binary (recommended)
+- **[TypeScript Version](./typescript/)** — Original Node.js implementation
+
+Both versions provide identical functionality. Choose based on your preference:
+- Use **Rust** for a standalone binary with no runtime dependencies
+- Use **TypeScript** if you prefer npm/pnpm package management
+
 ---
 
 ## 🚀 Features
@@ -18,6 +29,22 @@
 ---
 
 ## 📦 Installation
+
+### Rust Version (Recommended)
+
+```bash
+cargo install gix-cli
+```
+
+Or build from source:
+
+```bash
+cd rust
+cargo build --release
+# Binary will be at rust/target/release/gix
+```
+
+### TypeScript Version
 
 ```bash
 npm install -g gix-cli
