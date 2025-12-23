@@ -1,4 +1,4 @@
-name: Release
+name: Release TypeScript
 
 permissions:
   contents: write
@@ -8,10 +8,15 @@ on:
     branches:
       - main
       - master
+    paths:
+      - 'typescript/**'
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./typescript
 
     steps:
       - name: Checkout code
@@ -42,6 +47,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Check if tag already exists
+        working-directory: .
         run: |
           if git rev-parse ${{ steps.pkg.outputs.version }} >/dev/null 2>&1; then
             echo "Tag already exists, skipping."
@@ -49,6 +55,7 @@ jobs:
           fi
 
       - name: Create and push Git tag
+        working-directory: .
         run: |
           git tag ${{ steps.pkg.outputs.version }}
           git remote set-url origin https://nianyi778:${{ secrets.PERSONAL_TOKEN }}@github.com/nianyi778/gix-cli.git
@@ -73,6 +80,6 @@ jobs:
           name: Release ${{ steps.pkg.outputs.version }}
           generate_release_notes: true
           files: |
-            release.zip
+            typescript/release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
