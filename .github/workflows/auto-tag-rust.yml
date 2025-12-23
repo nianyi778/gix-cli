@@ -1,0 +1,47 @@
+name: Auto Tag Rust
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'rust/Cargo.toml'
+
+jobs:
+  auto-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PERSONAL_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Get version from Cargo.toml
+        id: version
+        working-directory: ./rust
+        run: |
+          # Extract version from Cargo.toml (assumes version is in the [package] section near the top)
+          VERSION=$(grep '^version =' Cargo.toml | head -n 1 | cut -d '"' -f 2)
+          echo "Detected version: $VERSION"
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: check
+        run: |
+          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag ${{ steps.version.outputs.tag }} does not exist."
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create and push tag
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin ${{ steps.version.outputs.tag }}
