@@ -49,7 +49,7 @@ pub fn get_current_branch() -> Result<String> {
 /// Check if branch has upstream
 pub fn has_upstream(branch: &str) -> bool {
     let output = Command::new("git")
-        .args(&["rev-parse", "--abbrev-ref", &format!("{}@{{u}}", branch)])
+        .args(["rev-parse", "--abbrev-ref", &format!("{}@{{u}}", branch)])
         .output();
 
     match output {

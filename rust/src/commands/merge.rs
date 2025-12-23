@@ -71,7 +71,10 @@ pub fn execute(args: MergeArgs) -> Result<()> {
     // Check if trying to merge from root commit
     let root_commits = exec_git(&["rev-list", "--max-parents=0", "HEAD"])?;
     let root_commits_str = String::from_utf8_lossy(&root_commits.stdout);
-    if root_commits_str.lines().any(|line| line.trim() == from.trim()) {
+    if root_commits_str
+        .lines()
+        .any(|line| line.trim() == from.trim())
+    {
         return Err(
             "❌ Cannot merge from the first (root) commit — it has no parent.\n👉 Consider using `git rebase --root` instead."
                 .to_string(),

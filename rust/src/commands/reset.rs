@@ -9,7 +9,9 @@ pub fn execute() -> Result<()> {
     if !remote_output.status.success() {
         return Err(format!("❌ Failed to get remote for branch '{}'", branch));
     }
-    let remote = String::from_utf8_lossy(&remote_output.stdout).trim().to_string();
+    let remote = String::from_utf8_lossy(&remote_output.stdout)
+        .trim()
+        .to_string();
     let remote_ref = format!("{}/{}", remote, branch);
 
     // Confirm with user
