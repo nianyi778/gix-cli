@@ -1,70 +1,80 @@
-# gix-cli Copilot Instructions
+# gix-cli Copilot 开发指南
 
-## Project Overview
-**gix** is a Git extension CLI tool with two implementations:
-- **Rust version** ([rust/](../rust/)) — Modern, performant native binary (recommended)
-- **TypeScript version** ([typescript/](../typescript/)) — Original Node.js implementation
+## 项目概览
+**gix** 是一个 Git 扩展 CLI 工具，包含两个实现版本：
+- **Rust 版本** ([rust/](../../rust/)) — 现代、高性能的原生二进制（**推荐**）
+- **TypeScript 版本** ([typescript/](../../typescript/)) — 原始 Node.js 实现
 
-Both provide identical functionality. This guide focuses on the **Rust version**.
+两个版本功能完全一致。本指南主要关注 **Rust 版本** 的开发。
 
-## Architecture
-- **Entry Point**: [rust/src/main.rs](../rust/src/main.rs) — Defines CLI structure with Clap and dispatches to command modules
-- **Commands**: [rust/src/commands/](../rust/src/commands/) — Each module exports an `Args` struct (if needed) and `execute()` function
-- **Build**: Cargo builds optimized binary to `rust/target/release/gix` (see [rust/Cargo.toml](../rust/Cargo.toml))
+## 架构设计
+- **入口文件**: [rust/src/main.rs](../../rust/src/main.rs) — 使用 Clap 定义 CLI 结构并分发到各命令模块
+- **命令模块**: [rust/src/commands/](../../rust/src/commands/) — 每个模块导出 `Args` 结构体（如需）和 `execute()` 函数
+- **构建输出**: Cargo 将优化后的二进制文件构建到 `rust/target/release/gix` (详见 [rust/Cargo.toml](../../rust/Cargo.toml))
 
-## Command Pattern
-Every command follows this structure (see [rust/src/commands/merge.rs](../rust/src/commands/merge.rs)):
-1. Define `Args` struct with Clap derive macros for CLI options
-2. Implement `execute(args: Args) -> Result<()>` function
-3. Validate working directory is clean: `is_working_directory_clean()?`
-4. Use `inquire::Text/Select/Confirm` for missing CLI inputs
-5. Execute git via `exec_git()` or `exec_git_interactive()` helpers
-6. Provide clear emoji-prefixed messages: ✅ success, ❌ error, ⚠️ warning, 🔧 execution
+## 命令开发模式
+每个命令必须遵循以下结构 (参考 [rust/src/commands/merge.rs](../../rust/src/commands/merge.rs)):
+1. 使用 Clap 宏定义 `Args` 结构体用于接收 CLI 参数
+2. 实现 `execute(args: Args) -> Result<()>` 函数
+3. **前置检查**: 必须先调用 `is_working_directory_clean()?` 确保工作区干净
+4. **交互输入**: 使用 `inquire::Text/Select/Confirm` 获取缺失的参数
+5. **执行 Git**: 使用 `exec_git()` (获取输出) 或 `exec_git_interactive()` (交互式执行)
+6. **用户反馈**: 使用带 Emoji 的清晰提示: ✅ 成功, ❌ 错误, ⚠️ 警告, 🔧 执行中
 
-## Key Conventions
-- **Git Safety**: Always check working directory is clean before destructive operations
-- **Upstream Handling**: Auto-detect upstream with `has_upstream()`. If missing, use `git push --set-upstream` instead of `--force-with-lease` (see [rust/src/commands/merge.rs#L116-L129](../rust/src/commands/merge.rs#L116-L129))
-- **Error Handling**: Return `Result<()>` from all command functions. Use `?` operator to propagate errors
-- **Interactive I/O**: Use `exec_git_interactive()` for commands requiring user input (commit editor, rebase, etc.)
-- **Force Push**: Use `--force-with-lease` for safety, with user confirmation prompt
+## 核心约定
+- **Git 安全**: 破坏性操作前必须检查工作区是否干净 (`git status --porcelain`)
+- **Upstream 处理**: 使用 `has_upstream()` 自动检测。如果缺失，使用 `git push --set-upstream` 而不是 `--force-with-lease`
+- **错误处理**: 所有命令函数返回 `Result<()>`。使用 `?` 传播错误，`Err(String)` 返回用户友好的错误信息
+- **交互式 I/O**: 需要用户输入（如编辑器、rebase 交互）的命令必须使用 `exec_git_interactive()`
+- **Force Push**: 必须使用 `--force-with-lease` 保证安全，并总是先请求用户确认
 
-## Development Workflow
-- **Local Dev**: `cd rust && cargo run -- <command>` — Run directly with Cargo
-- **Build**: `cd rust && cargo build --release` — Creates optimized binary in `rust/target/release/gix`
-- **Testing**: No formal tests. Test interactively with `cargo run -- <command>`
-- **Format**: `cargo fmt` — Auto-format code before committing
-- **Lint**: `cargo clippy` — Run linter for code quality checks
+## 开发工作流 (必读)
+为确保 CI/CD 一次通过，请严格遵守以下流程：
 
-## Git Command Patterns
-- **Merge Commits**: `git reset --soft <from>^ && git commit` — Reset to parent of start commit, then new commit (see [rust/src/commands/merge.rs#L96-L103](../rust/src/commands/merge.rs#L96-L103))
-- **Root Commit Check**: Prevent merge from root with `git rev-list --max-parents=0 HEAD`
-- **Clean Check**: `git status --porcelain` must return empty string
+1. **本地开发**:
+   ```bash
+   cd rust
+   cargo run -- <command>  # 例如: cargo run -- doctor
+   ```
+
+2. **代码检查 (提交前必做)**:
+   ```bash
+   cd rust
+   cargo fmt              # 自动格式化代码
+   cargo clippy -- -D warnings  # 检查潜在问题 (必须无警告)
+   cargo check            # 确保能编译通过
+   ```
+
+3. **构建测试**:
+   ```bash
+   cargo build --release  # 确保 release 构建成功
+   ```
+
+4. **提交代码**:
+   ```bash
+   git add .
+   git commit -m "feat: description"
+   git push
+   ```
+
+## Git 命令模式参考
+- **Merge Commits**: `git reset --soft <from>^ && git commit` — 重置到起始 commit 的父节点，然后提交
+- **Root Commit Check**: 使用 `git rev-list --max-parents=0 HEAD` 防止从根 commit 合并
+- **Clean Check**: `git status --porcelain` 必须返回空字符串
 - **Current Branch**: `git symbolic-ref --short HEAD`
-- **Upstream Check**: `git rev-parse --abbrev-ref <branch>@{u}` (suppress errors if no upstream)
+- **Upstream Check**: `git rev-parse --abbrev-ref <branch>@{u}` (忽略错误即为无 upstream)
 
-## Error Handling
-- All commands return `Result<()>` where `Err(String)` is a user-facing error message
-- Validate inputs before execution (working directory clean, valid commit hashes, etc.)
-- Return early on validation failures — do NOT proceed with destructive operations
-- Use helper functions from [rust/src/commands/mod.rs](../rust/src/commands/mod.rs) for common operations
+## 添加新命令步骤
+1. 在 [rust/src/commands/](../../rust/src/commands/) 创建文件 (例如 `mycommand.rs`)
+2. 定义 `Args` 结构体并添加 `#[derive(Args)]`
+3. 实现 `execute(args: Args) -> Result<()>`
+4. 在 [rust/src/commands/mod.rs](../../rust/src/commands/mod.rs) 导出: `pub mod mycommand;`
+5. 在 [rust/src/main.rs](../../rust/src/main.rs) 的 `Commands` 枚举中添加变体
+6. 在 `main()` 的 `match` 语句中添加分发逻辑
 
-## Adding New Commands
-1. Create file in [rust/src/commands/](../rust/src/commands/) (e.g., `mycommand.rs`)
-2. Define `Args` struct with `#[derive(Args)]` and Clap field attributes
-3. Implement `execute(args: Args) -> Result<()>` function
-4. Export in [rust/src/commands/mod.rs](../rust/src/commands/mod.rs): `pub mod mycommand;`
-5. Add enum variant to `Commands` in [rust/src/main.rs](../rust/src/main.rs)
-6. Add match arm in `main()` to dispatch to your command
+## 外部依赖
+- **clap**: CLI 框架 (`#[derive(Parser)]`, `#[arg(...)]`)
+- **inquire**: 交互式提示 (`Text`, `Select`, `Confirm`)
+- **colored**: 终端颜色 (`.red()`, `.green()`, `.yellow()`, `.cyan()`)
+- **std::process::Command**: 执行 Git 命令 (`.status()` 或 `.output()`)
 
-## External Dependencies
-- **clap**: CLI framework with derive macros (`#[derive(Parser)]`, `#[arg(...)]`)
-- **inquire**: Interactive prompts (`Text`, `Select`, `Confirm`)
-- **colored**: Terminal colors (`.red()`, `.green()`, `.yellow()`, `.cyan()`)
-- **std::process::Command**: Execute git commands with `.status()` or `.output()`
-
-## Migration Notes (TypeScript → Rust)
-- Replaced `commander` with `clap` (derive-based API)
-- Replaced `inquirer` with `inquire` (similar API, more type-safe)
-- Replaced `execSync()` with `std::process::Command` (explicit I/O handling)
-- No build step for development — use `cargo run` directly
-- Binary size optimized with `opt-level = "z"`, LTO, and strip in release profile
